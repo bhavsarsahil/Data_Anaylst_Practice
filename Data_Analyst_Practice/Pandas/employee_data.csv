@@ -1,0 +1,11 @@
+Employee id,Name,Age,Salary,City,Bonus,Total Compensation
+1,Sahil,25,55000,New York,5500.0,60500.0
+2,john,30,60000,Los Angeles,6000.0,66000.0
+3,michael,35,70000,Chicago,7000.0,77000.0
+4,susan,40,80000,Houston,8000.0,88000.0
+5,lisa,45,90000,Phoenix,9000.0,99000.0
+6,david,50,100000,Philadelphia,10000.0,110000.0
+7,jessica,55,110000,San Antonio,11000.0,121000.0
+8,robert,60,120000,San Diego,12000.0,132000.0
+9,linda,65,130000,Dallas,13000.0,143000.0
+10,james,70,140000,San Jose,14000.0,154000.0
