@@ -58,6 +58,7 @@ select orderDate,YEAR(orderDate) as Dayname_order from orders
 
 --	CASE Operator in SQL
 select * from [products]
+
 select productName,quantityInStock,
 CASE 
 	when quantityInStock < 1000 then 'Urgent need of stock'
@@ -65,4 +66,73 @@ CASE
 end as production_details
 from products
 
+-- Group By function
+select * from employees
+SELECT department, ROUND(SUM(salary),1) as NoOfEmployess  from employees
+GROUP BY department
 
+-- Order By with Group By
+select productLine , SUM(quantityInStock) as Stock
+from products
+GROUP by productLine 
+ORDER BY Stock DESC
+
+-- Having Clause 
+select productLine , SUM(quantityInStock) as Stock
+from products
+GROUP by productLine 
+HAVING SUM(quantityInStock) > 20000
+ORDER BY Stock DESC
+
+
+-- Joins In Sql
+ -- Inner Join 
+		select * from Customers
+		INNER JOIN Local_Orders
+		on Customers.CustomerID = Local_Orders.CustomerID;
+
+		select  Customers.CustomerID,CustomerName,Product from Customers
+		INNER JOIN Local_Orders
+		on Customers.CustomerID = Local_Orders.CustomerID;
+
+ -- Left Join 
+		select * from Customers
+		Left JOIN Local_Orders
+		on Customers.CustomerID = Local_Orders.CustomerID;	
+
+ -- Right Join
+ 		select * from Customers
+		RIGHT JOIN Local_Orders
+		on Customers.CustomerID = Local_Orders.CustomerID;	
+
+ -- Cross Join
+	select * from Customers
+		CROSS JOIN Local_Orders;
+
+-- Set Operator 
+ --Union
+	select CustomerID, Country from Customers
+	UNION 	
+	SELECT CustomerID,Product from Local_Orders
+
+ -- Union All
+	select CustomerID, Country from Customers
+	UNION ALL	
+	SELECT CustomerID,Product from Local_Orders
+
+ -- intersaaction
+	select CustomerID from Customers
+	INTERSECT	
+	SELECT CustomerID from Local_Orders
+
+ -- Except
+	select CustomerID, Country from Customers
+	EXCEPT 		
+	SELECT CustomerID,Product from Local_Orders
+
+-- SUB-QUERY 
+select AVG(salary) from employees
+
+select * from employees where  	salary > ( 
+	select ROUND(avg(salary),1) from employees
+)
