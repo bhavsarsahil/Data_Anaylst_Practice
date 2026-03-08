@@ -164,3 +164,97 @@ GROUP BY
     DAY(transaction_date)
 ORDER BY 
     DAY(transaction_date);
+
+--COMPARING DAILY SALES WITH AVERAGE SALES – IF GREATER THAN “ABOVE AVERAGE” and LESSER THAN “BELOW AVERAGE”
+SELECT 
+    day_of_month,
+    CASE 
+        WHEN total_sales > avg_sales THEN 'Above Average'
+        WHEN total_sales < avg_sales THEN 'Below Average'
+        ELSE 'Average'
+    END AS sales_status,
+    total_sales 
+FROM (
+    SELECT 
+        DAY(transaction_date) AS day_of_month,
+        SUM(unit_price * transaction_qty) AS total_sales,
+        AVG(SUM(unit_price * transaction_qty)) OVER () AS avg_sales
+    FROM 
+        coffee_shop_sales
+    WHERE 
+        MONTH(transaction_date) = 5  -- Filter for May
+    GROUP BY 
+        DAY(transaction_date)
+) AS sales_data
+ORDER BY 
+    day_of_month;
+
+--SALES BY PRODUCT CATEGORY
+SELECT 
+	product_category,
+	ROUND(SUM(unit_price * transaction_qty),1) as Total_Sales
+FROM coffee_shop_sales
+WHERE
+	MONTH(transaction_date) = 5 
+GROUP BY product_category
+ORDER BY SUM(unit_price * transaction_qty) DESC
+
+--SALES BY PRODUCTS (TOP 10)
+SELECT top 10
+	product_type,
+	ROUND(SUM(unit_price * transaction_qty),1) as Total_Sales
+FROM coffee_shop_sales
+WHERE
+	MONTH(transaction_date) = 5 
+GROUP BY product_type
+ORDER BY Total_Sales DESC
+
+--SALES BY PRODUCTS (TOP 10) and product category = coffee
+SELECT top 10
+	product_type,
+	ROUND(SUM(unit_price * transaction_qty),1) as Total_Sales
+FROM coffee_shop_sales
+WHERE
+	MONTH(transaction_date) = 5 AND product_category = 'Coffee'
+GROUP BY product_type
+ORDER BY Total_Sales DESC
+
+--SALES BY DAY | HOUR
+SELECT 
+    ROUND(SUM(unit_price * transaction_qty), 0) AS Total_Sales,
+    SUM(transaction_qty) AS Total_Quantity,
+    COUNT(*) AS Total_Orders
+FROM 
+    coffee_shop_sales
+WHERE 
+    DATEPART(WEEKDAY, transaction_date) = 3 -- Tuesday
+    AND DATEPART(HOUR, transaction_time) = 8 -- 8 AM
+    AND MONTH(transaction_date) = 5;         -- May
+
+--TO GET SALES FOR ALL HOURS FOR MONTH OF MAY
+SELECT 
+    datepart(HOUR,transaction_time) AS Hour_of_Day,
+    ROUND(SUM(unit_price * transaction_qty),0) AS Total_Sales
+FROM 
+    coffee_shop_sales
+WHERE 
+    MONTH(transaction_date) = 5 -- Filter for May (month number 5)
+GROUP BY 
+    datepart(HOUR,transaction_time)
+ORDER BY 
+    datepart(HOUR,transaction_time);
+
+--TO GET SALES FROM MONDAY TO SUNDAY FOR MONTH OF MAY
+SELECT 
+    DATENAME(WEEKDAY, transaction_date) AS Day_of_Week,
+    ROUND(SUM(unit_price * transaction_qty), 0) AS Total_Sales
+FROM 
+    coffee_shop_sales
+WHERE 
+    MONTH(transaction_date) = 5
+GROUP BY 
+    DATENAME(WEEKDAY, transaction_date),
+    DATEPART(WEEKDAY, transaction_date) -- Added to help with sorting
+ORDER BY 
+    DATEPART(WEEKDAY, transaction_date);
+
