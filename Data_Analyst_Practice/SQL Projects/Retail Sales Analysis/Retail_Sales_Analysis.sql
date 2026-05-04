@@ -88,39 +88,49 @@ GROUP BY category;
 
 
 -- Q.7 Write a SQL query to calculate the average sale for each month. Find out best selling month in each year
+SELECT 
+    year,
+    month,
+    avg_sale
+FROM 
+(    
     SELECT 
-        YEAR(sale_date) AS [Year],
-        MONTH(sale_date) AS [Month],
-        AVG(total_sale) AS AvgSale,
-        SUM(total_sale) AS TotalMonthlySale,
-		rank() over(PARTI)
-    FROM Retail_Sales_Analysis
-    GROUP BY YEAR(sale_date), MONTH(sale_date) 
-	order by 1,2
-
-	WITH MonthlySales AS (
-    SELECT 
-        YEAR(sale_date) AS [Year],
-        MONTH(sale_date) AS [Month],
-        AVG(total_sale) AS AvgSale,
-        SUM(total_sale) AS TotalMonthlySale
+        YEAR(sale_date) AS year,
+        MONTH(sale_date) AS month,
+        AVG(total_sale) AS avg_sale,
+        RANK() OVER(PARTITION BY YEAR(sale_date) ORDER BY AVG(total_sale) DESC) AS rank
     FROM Retail_Sales_Analysis
     GROUP BY YEAR(sale_date), MONTH(sale_date)
-),
-RankedMonths AS (
-    SELECT 
-        [Year],
-        [Month],
-        AvgSale,
-        ROW_NUMBER() OVER(PARTITION BY [Year] ORDER BY TotalMonthlySale DESC) AS Rank
-    FROM MonthlySales
+) AS t1
+WHERE rank = 1;
+
+-- Q.8 Write a SQL query to find the top 5 customers based on the highest total sales 
+select top 5
+customer_id,
+sum(total_sale) as total_sales
+from Retail_Sales_Analysis
+group by customer_id
+order by total_sales desc
+
+-- Q.9 Write a SQL query to find the number of unique customers who purchased items from each category.
+select
+category,
+count(distinct customer_id) as cnt_unq_cs
+from Retail_Sales_Analysis
+group by category
+
+-- Q.10 Write a SQL query to create each shift and number of orders (Example Morning <=12, Afternoon Between 12 & 17, Evening >17)
+WITH ShiftData AS (
+    SELECT *,
+        CASE 
+            WHEN DATEPART(HOUR, sale_time) < 12 THEN 'Morning'
+            WHEN DATEPART(HOUR, sale_time) BETWEEN 12 AND 17 THEN 'Afternoon'
+            ELSE 'Evening'
+        END AS shift
+    FROM Retail_Sales_Analysis
 )
 SELECT 
-    [Year],
-    [Month],
-    AvgSale AS Average_Sale_Of_Best_Month
-FROM RankedMonths
-WHERE Rank = 1;
--- Q.8 Write a SQL query to find the top 5 customers based on the highest total sales 
--- Q.9 Write a SQL query to find the number of unique customers who purchased items from each category.
--- Q.10 Write a SQL query to create each shift and number of orders (Example Morning <=12, Afternoon Between 12 & 17, Evening >17)
+    shift,
+    COUNT(*) AS total_orders
+FROM ShiftData
+GROUP BY shift;
