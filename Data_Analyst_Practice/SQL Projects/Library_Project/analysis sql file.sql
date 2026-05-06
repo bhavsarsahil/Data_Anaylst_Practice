@@ -25,30 +25,57 @@ select * from members;
 -- Task 3: Delete a Record from the Issued Status Table
 -- Objective: Delete the record with issued_id = 'IS104' from the issued_status table.
 SELECT * FROM issued_status
-WHERE issued_id = 'IS121';
+WHERE issued_id = 'IS112';
+
+delete from issued_status
+where issued_id = 'IS112';
 
 -- Task 4: Retrieve All Books Issued by a Specific Employee
 -- Objective: Select all books issued by the employee with emp_id = 'E101'.
-
+SELECT * from issued_status
+where issued_emp_id='E101';
 
 -- Task 5: List Members Who Have Issued More Than One Book
 -- Objective: Use GROUP BY to find members who have issued more than one book.
-
+select 
+	issued_member_id
+from issued_status
+group by issued_member_id
+having count(*) > 1;
 
 -- ### 3. CTAS (Create Table As Select)
 
 -- Task 6: Create Summary Tables**: Used CTAS to generate new tables based on query results - each book and total book_issued_cnt
-
+select b.isbn,b.book_title,
+COUNT(ist.issued_id) as no_issued
+from books as b 
+join issued_status as ist 
+ON ist.issued_book_isbn = b.isbn
+GROUP BY 1,2
 
 -- ### 4. Data Analysis & Findings
 
 -- Task 7. **Retrieve All Books in a Specific Category:
-
+SELECT * from books
+where category = "Classic"
 
 -- Task 8: Find Total Rental Income by Category:
-
+select
+category,
+sum(rental_price),
+count(*)
+ from books
+ GROUP BY 1
 
 -- Task 9. **List Members Who Registered in the Last 180 Days**:
+SELECT * 
+FROM members
+WHERE reg_date >= CURRENT_DATE - INTERVAL 180 DAY;
+
+INSERT into members(member_id,member_name,member_address,reg_date)
+VALUES
+('C120','Smith', '456 Birch St', '2026-03-05'),
+('C121','Smith', '123 Main St', '2026-02-05')
 
 -- Task 10: List Employees with Their Branch Manager's Name and their branch details**:
 
