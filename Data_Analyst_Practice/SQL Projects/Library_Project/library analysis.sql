@@ -223,19 +223,45 @@ ORDER BY 1;
 select * from branch_performance;
 
 
-
-
 --Task 16: CTAS: Create a Table of Active Members
 --Use the CREATE TABLE AS (CTAS) statement to create a new table active_members containing members who have issued at least one book in the last 6 months.
-
+select * from members
+where member_id in(
+    select 
+        DISTINCT issued_member_id
+        from issued_status
+        where issued_date >= CURRENT_DATE- interval 2 month;);
 
 
 --Task 17: Find Employees with the Most Book Issues Processed
 --Write a query to find the top 3 employees who have processed the most book issues. Display the employee name, number of books processed, and their branch.
+select 
+e.emp_name,
+b.*,
+count(ist.issued_id) as no_book_issued
+from issued_status as ist
+join employees as e 
+on e.emp_id=ist.issued_emp_id
+join branch as b
+on b.branch_id=e.branch_id
+GROUP BY 1,2
+order by no_book_issued DESC
+LIMIT 3;
 
 
 --Task 18: Identify Members Issuing High-Risk Books
 --Write a query to identify members who have issued books more than twice with the status "damaged" in the books table. Display the member name, book title, and the number of times they've issued damaged books.    
+SELECT 
+    m.member_name,
+    b.book_title,
+    COUNT(ist.issued_id) AS damage_count
+FROM issued_status AS ist
+JOIN members AS m ON ist.issued_member_id = m.member_id
+JOIN books AS b ON ist.issued_book_isbn = b.isbn
+JOIN return_status AS rs ON rs.issued_id = ist.issued_id
+WHERE rs.book_quality = 'Damaged'
+GROUP BY m.member_name, b.book_title
+HAVING COUNT(ist.issued_id) > 2;
 
 
 --Task 19: Stored Procedure
@@ -244,8 +270,54 @@ select * from branch_performance;
   --If a book is issued, the status should change to 'no'.
   --a book is returned, the status should change to 'yes'.
 
+  DROP PROCEDURE IF EXISTS manage_book_status;
+
+DELIMITER //
+
+CREATE PROCEDURE manage_book_status(
+    IN p_action VARCHAR(10),   -- Use 'ISSUE' or 'RETURN'
+    IN p_isbn VARCHAR(50)
+)
+BEGIN
+    -- If issuing, set status to 'no'
+    IF p_action = 'ISSUE' THEN
+        UPDATE books 
+        SET status = 'no' 
+        WHERE isbn = p_isbn;
+        SELECT 'Book status updated to NO (Issued)' AS Message;
+        
+    -- If returning, set status to 'yes'
+    ELSEIF p_action = 'RETURN' THEN
+        UPDATE books 
+        SET status = 'yes' 
+        WHERE isbn = p_isbn;
+        SELECT 'Book status updated to YES (Available)' AS Message;
+        
+    ELSE
+        SELECT 'Invalid Action. Please use ISSUE or RETURN.' AS Error;
+    END IF;
+END //
+
+DELIMITER ;
+
+
 --Task 20: Create Table As Select (CTAS)
 --Objective: Create a CTAS (Create Table As Select) query to identify overdue books and calculate fines.
+CREATE OR REPLACE VIEW overdue_fines_view AS
+SELECT 
+    m.member_id,
+    m.member_name,
+    COUNT(ist.issued_id) AS number_of_overdue_books,
+    -- Calculate $0.50 fine per day for books over 30 days
+    SUM(DATEDIFF(CURDATE(), ist.issued_date) * 0.50) AS total_fines
+FROM issued_status AS ist
+JOIN members AS m ON ist.issued_member_id = m.member_id
+LEFT JOIN return_status AS rs ON rs.issued_id = ist.issued_id
+WHERE rs.return_date IS NULL 
+  AND DATEDIFF(CURDATE(), ist.issued_date) > 30
+GROUP BY m.member_id, m.member_name;
+
+select *from overdue_fines_view;
 
 --Description: Write a CTAS query to create a new table that lists each member and the books they have issued but not returned within 30 days. The table should include:
 --    The number of overdue books.
