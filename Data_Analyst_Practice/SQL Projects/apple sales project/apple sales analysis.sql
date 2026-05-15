@@ -224,7 +224,8 @@ ORDER BY average_price DESC;
 SELECT 
     COUNT(*) AS total_warranty_claims
 FROM warranty
-WHERE YEAR(claim_date) = 2020;
+WHERE YEAR(claim_date) = 2024;
+
 -- 10.For each store, identify the best-selling day based on highest quantity sold.
 
 WITH store_sales AS (
@@ -253,3 +254,13 @@ SELECT
     total_quantity
 FROM store_sales
 WHERE rnk = 1;
+
+--Medium to Hard (5 Questions)
+--Identify the least selling product in each country for each year based on total units sold.
+
+
+
+--Calculate how many warranty claims were filed within 180 days of a product sale.
+--Determine how many warranty claims were filed for products launched in the last two years.
+--List the months in the last three years where sales exceeded 5,000 units in the USA.
+--Identify the product category with the most warranty claims filed in the last two years.
